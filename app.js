@@ -6,6 +6,7 @@ const preview = document.getElementById("preview");
 const descInput = document.getElementById("description");
 const saveBtn = document.getElementById("saveBtn");
 const galleryDiv = document.getElementById("gallery");
+const exportZipBtn = document.getElementById("exportZipBtn");
 
 let lastPhotoDataUrl = null;
 
@@ -98,7 +99,39 @@ function downloadNote(id) {
   URL.revokeObjectURL(url);
 }
 
+async function exportZip() {
+  const notes = JSON.parse(localStorage.getItem("photoNotesCam") || "[]");
+
+  if (notes.length === 0) {
+    alert("La galleria è vuota!");
+    return;
+  }
+
+  const zip = new JSZip();
+  const folder = zip.folder("PhotoNotes");
+
+  for (let note of notes) {
+    const imgData = note.img.split(",")[1];
+    folder.file(`photo_${note.id}.jpg`, imgData, { base64: true });
+
+    const textContent =
+      `Descrizione: ${note.desc || "(vuota)"}\n` +
+      `Data: ${note.date}`;
+    folder.file(`photo_${note.id}.txt`, textContent);
+  }
+
+  const content = await zip.generateAsync({ type: "blob" });
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(content);
+  a.download = "galleria_photonotes.zip";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 startBtn.addEventListener("click", startCamera);
 captureBtn.addEventListener("click", capturePhoto);
 saveBtn.addEventListener("click", saveNote);
+exportZipBtn.addEventListener("click", exportZip);
+
 loadGallery();
