@@ -1,0 +1,16 @@
+body { font-family:-apple-system,BlinkMacSystemFont,sans-serif; margin:0; padding:15px; background:#f7f7f7;}
+header h1{ text-align:center; font-size:26px; margin-bottom:20px;}
+#cameraView{ width:100%; max-height:320px; background:#000; border-radius:12px;}
+.buttons-row{ display:flex; gap:10px; margin:10px 0;}
+button{ flex:1; padding:12px; font-size:16px; border:none; border-radius:12px; background:#007aff; color:white;}
+button[disabled]{ opacity:0.5;}
+textarea{ width:100%; border-radius:12px; padding:10px; font-size:16px; border:1px solid #ddd; margin-top:10px; min-height:90px;}
+.preview{ width:100%; border-radius:12px; margin:10px 0; display:none;}
+.primary{ background:#007aff; margin-top:10px;}
+.gallery{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:10px;}
+.photoCard{ background:white; padding:8px; border-radius:12px; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+.photoCard img{ width:100%; border-radius:10px;}
+.photoCard p{ font-size:14px;}
+.small{ font-size:11px; color:#555;}
+.deleteBtn{ background:#ff3b30; margin-top:6px;}
+.downloadBtn{ background:#34c759; margin-top:6px;}
