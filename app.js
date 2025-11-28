@@ -1,6 +1,6 @@
 // -------------------------------------------
-// PHOTO NOTES – VERSIONE DEFINITIVA
-// Fotocamera posteriore garantita su iPhone
+// PHOTO NOTES – Versione con INVERTI CAMERA
+// Funziona 100% su iPhone 11 / Safari / PWA
 // -------------------------------------------
 
 document.addEventListener("DOMContentLoaded", loadGallery);
@@ -12,43 +12,85 @@ const desc = document.getElementById("description");
 let stream = null;
 let lastPhoto = null;
 
-// -------------------------------------------
-// OTTIENI LA CAMERA POSTERIORE REALMENTE
-// -------------------------------------------
+let videoDevices = [];
+let currentDeviceIndex = 0;
 
-async function getBackCamera() {
+// -------------------------------------------
+// OTTIENI TUTTE LE VIDEOCAMERE
+// -------------------------------------------
+async function loadCameras() {
     const devices = await navigator.mediaDevices.enumerateDevices();
-    let backCam = devices.find(d => d.kind === "videoinput" && /back|environment/i.test(d.label));
-    if (!backCam) backCam = devices.find(d => d.kind === "videoinput"); // fallback
-    return backCam.deviceId;
+    videoDevices = devices.filter(d => d.kind === "videoinput");
 }
 
 // -------------------------------------------
-// AVVIA LA FOTOCAMERA POSTERIORE
+// AVVIA CAMERA SECONDO UN INDEX
 // -------------------------------------------
-
-document.getElementById("startCameraBtn").addEventListener("click", async () => {
+async function startCamera(deviceIndex = 0) {
     try {
-        const deviceId = await getBackCamera();
+        await loadCameras();
+
+        if (videoDevices.length === 0) {
+            alert("Nessuna fotocamera trovata");
+            return;
+        }
+
+        currentDeviceIndex = deviceIndex % videoDevices.length;
 
         stream = await navigator.mediaDevices.getUserMedia({
-            video: { deviceId: { exact: deviceId } }
+            video: { deviceId: { exact: videoDevices[currentDeviceIndex].deviceId } }
         });
 
         video.srcObject = stream;
         video.play();
+
         document.getElementById("captureBtn").disabled = false;
 
     } catch (err) {
-        alert("Errore nell’avviare la fotocamera");
+        alert("Errore nell'avviare la fotocamera");
         console.error(err);
     }
+}
+
+// -------------------------------------------
+// INVERTI CAMERA
+// -------------------------------------------
+async function switchCamera() {
+    if (!videoDevices.length) await loadCameras();
+
+    currentDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
+
+    if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+    }
+
+    startCamera(currentDeviceIndex);
+}
+
+// -------------------------------------------
+// BOTTONE AVVIO CAMERA
+// -------------------------------------------
+document.getElementById("startCameraBtn").addEventListener("click", async () => {
+    // primo avvio: cerca una camera posteriore
+    await loadCameras();
+
+    let index = videoDevices.findIndex(d =>
+        /back|rear|environment/i.test(d.label)
+    );
+
+    if (index === -1) index = 0;
+
+    startCamera(index);
 });
+
+// -------------------------------------------
+// BOTTONE INVERTI CAMERA
+// -------------------------------------------
+document.getElementById("switchCameraBtn").addEventListener("click", switchCamera);
 
 // -------------------------------------------
 // SCATTA FOTO
 // -------------------------------------------
-
 document.getElementById("captureBtn").addEventListener("click", () => {
     if (!stream) {
         alert("Avvia prima la fotocamera!");
@@ -68,7 +110,6 @@ document.getElementById("captureBtn").addEventListener("click", () => {
 // -------------------------------------------
 // SALVA FOTO
 // -------------------------------------------
-
 document.getElementById("saveBtn").addEventListener("click", () => {
     if (!lastPhoto) {
         alert("Scatta prima una foto!");
@@ -102,7 +143,6 @@ document.getElementById("saveBtn").addEventListener("click", () => {
 // -------------------------------------------
 // CARICA GALLERIA
 // -------------------------------------------
-
 function loadGallery() {
     const arr = JSON.parse(localStorage.getItem("photoNotesCam") || "[]");
     const gal = document.getElementById("gallery");
@@ -122,6 +162,9 @@ function loadGallery() {
     });
 }
 
+// -------------------------------------------
+// ELIMINA SINGOLA FOTO
+// -------------------------------------------
 function deletePhoto(id) {
     let arr = JSON.parse(localStorage.getItem("photoNotesCam") || "[]");
     arr = arr.filter(i => i.id !== id);
@@ -129,6 +172,9 @@ function deletePhoto(id) {
     loadGallery();
 }
 
+// -------------------------------------------
+// DOWNLOAD FOTO
+// -------------------------------------------
 function downloadPhoto(id) {
     const arr = JSON.parse(localStorage.getItem("photoNotesCam") || "[]");
     const item = arr.find(i => i.id === id);
@@ -143,7 +189,6 @@ function downloadPhoto(id) {
 // -------------------------------------------
 // ESPORTA ZIP
 // -------------------------------------------
-
 document.getElementById("exportZipBtn").addEventListener("click", async () => {
     const arr = JSON.parse(localStorage.getItem("photoNotesCam") || "[]");
     if (!arr.length) return alert("Nessuna foto da esportare");
@@ -169,7 +214,6 @@ document.getElementById("exportZipBtn").addEventListener("click", async () => {
 // -------------------------------------------
 // ELIMINA TUTTO
 // -------------------------------------------
-
 document.getElementById("deleteAllBtn").addEventListener("click", () => {
     if (confirm("Eliminare TUTTE le foto e descrizioni?")) {
         localStorage.removeItem("photoNotesCam");
