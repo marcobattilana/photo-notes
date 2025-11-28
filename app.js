@@ -118,14 +118,11 @@ function downloadPhoto(id) {
     document.body.removeChild(a);
 }
 
-// -------------------------------------------
-// 🔥 NUOVO PULSANTE: ELIMINA TUTTO
-// -------------------------------------------
-
-document.getElementById("deleteAll").addEventListener("click", () => {
-    if (confirm("Sei sicuro di voler eliminare TUTTE le foto e descrizioni? L’azione è irreversibile.")) {
-        localStorage.removeItem("gallery");
+// 🔥 Elimina tutta la galleria
+document.getElementById("deleteAllBtn").addEventListener("click", () => {
+    if (confirm("Vuoi davvero eliminare TUTTE le foto e le descrizioni?")) {
+        localStorage.removeItem("photoNotesCam");
         loadGallery();
-        alert("Tutta la galleria è stata eliminata!");
+        alert("Galleria svuotata!");
     }
 });
