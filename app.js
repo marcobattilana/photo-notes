@@ -1,137 +1,131 @@
+// -------------------------------------------
+// PHOTO NOTES - APP.JS (con pulsante ELIMINA TUTTO)
+// -------------------------------------------
+
+// Carica galleria al caricamento pagina
+document.addEventListener("DOMContentLoaded", loadGallery);
+
+// Elementi
+const video = document.getElementById("camera");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 let stream = null;
-const video = document.getElementById("cameraView");
-const startBtn = document.getElementById("startCameraBtn");
-const captureBtn = document.getElementById("captureBtn");
-const preview = document.getElementById("preview");
-const descInput = document.getElementById("description");
-const saveBtn = document.getElementById("saveBtn");
-const galleryDiv = document.getElementById("gallery");
-const exportZipBtn = document.getElementById("exportZipBtn");
+let lastPhotoData = null;
 
-let lastPhotoDataUrl = null;
+// Avvia fotocamera
+document.getElementById("startCamera").addEventListener("click", async () => {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.play();
+    } catch (err) {
+        alert("Errore nell’avviare la fotocamera");
+        console.error(err);
+    }
+});
 
-async function startCamera() {
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: "environment" } },
-      audio: false
-    });
-    video.srcObject = stream;
-    captureBtn.disabled = false;
-  } catch (err) {
-    alert("Impossibile avviare la fotocamera: " + err.message);
-  }
-}
+// Scatta foto
+document.getElementById("takePhoto").addEventListener("click", () => {
+    if (!stream) {
+        alert("Avvia prima la fotocamera");
+        return;
+    }
 
-function capturePhoto() {
-  if (!stream) {
-    alert("Avvia prima la fotocamera.");
-    return;
-  }
-  const trackSettings = stream.getVideoTracks()[0].getSettings();
-  const width = trackSettings.width || 640;
-  const height = trackSettings.height || 480;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0);
 
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(video, 0, 0, width, height);
-  lastPhotoDataUrl = canvas.toDataURL("image/jpeg", 0.9);
-  preview.src = lastPhotoDataUrl;
-  preview.style.display = "block";
-}
+    lastPhotoData = canvas.toDataURL("image/jpeg");
+    document.getElementById("preview").src = lastPhotoData;
+});
 
-function saveNote() {
-  if (!lastPhotoDataUrl) {
-    alert("Scatta una foto prima di salvare!");
-    return;
-  }
-  const desc = descInput.value.trim();
-  const item = {
-    id: Date.now(),
-    img: lastPhotoDataUrl,
-    desc,
-    date: new Date().toLocaleString()
-  };
-  const notes = JSON.parse(localStorage.getItem("photoNotesCam") || "[]");
-  notes.push(item);
-  localStorage.setItem("photoNotesCam", JSON.stringify(notes));
-  descInput.value = "";
-  lastPhotoDataUrl = null;
-  preview.style.display = "none";
-  preview.src = "";
-  loadGallery();
-}
+// Salva foto + descrizione
+document.getElementById("savePhoto").addEventListener("click", () => {
+    const descr = document.getElementById("description").value.trim();
+    if (!lastPhotoData) {
+        alert("Scatta prima una foto!");
+        return;
+    }
+    if (!descr) {
+        alert("Scrivi una descrizione!");
+        return;
+    }
 
+    const id = "photo_" + Date.now();
+    const date = new Date().toLocaleString();
+
+    const item = {
+        id: id,
+        img: lastPhotoData,
+        descr: descr,
+        date: date
+    };
+
+    let gallery = JSON.parse(localStorage.getItem("gallery") || "[]");
+    gallery.push(item);
+    localStorage.setItem("gallery", JSON.stringify(gallery));
+
+    // pulizia UI
+    document.getElementById("description").value = "";
+    document.getElementById("preview").src = "";
+    lastPhotoData = null;
+
+    loadGallery();
+    alert("Foto salvata!");
+});
+
+// Carica e mostra galleria
 function loadGallery() {
-  const notes = JSON.parse(localStorage.getItem("photoNotesCam") || "[]");
-  galleryDiv.innerHTML = "";
-  notes.forEach(note => {
-    const div = document.createElement("div");
-    div.className = "photoCard";
-    div.innerHTML = `
-      <img src="${note.img}">
-      <p>${note.desc || "(senza descrizione)"}<br><span class="small">${note.date}</span></p>
-      <button class="downloadBtn" onclick="downloadNote(${note.id})">⬇️ Scarica</button>
-      <button class="deleteBtn" onclick="deleteNote(${note.id})">🗑 Elimina</button>
-    `;
-    galleryDiv.appendChild(div);
-  });
+    const gallery = JSON.parse(localStorage.getItem("gallery") || "[]");
+    const container = document.getElementById("gallery");
+
+    container.innerHTML = "";
+
+    gallery.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+            <img src="${item.img}" class="thumb">
+            <div class="title">${item.descr}</div>
+            <div class="date">${item.date}</div>
+            <button class="download" onclick="downloadPhoto('${item.id}')">⬇️ Scarica</button>
+            <button class="delete" onclick="deletePhoto('${item.id}')">🗑️ Elimina</button>
+        `;
+        container.appendChild(card);
+    });
 }
 
-function deleteNote(id) {
-  let notes = JSON.parse(localStorage.getItem("photoNotesCam") || "[]");
-  notes = notes.filter(n => n.id !== id);
-  localStorage.setItem("photoNotesCam", JSON.stringify(notes));
-  loadGallery();
+// Elimina singola foto
+function deletePhoto(id) {
+    let gallery = JSON.parse(localStorage.getItem("gallery") || "[]");
+    gallery = gallery.filter(item => item.id !== id);
+    localStorage.setItem("gallery", JSON.stringify(gallery));
+    loadGallery();
 }
 
-function downloadNote(id) {
-  const notes = JSON.parse(localStorage.getItem("photoNotesCam") || "[]");
-  const item = notes.find(n => n.id === id);
-  const blob = new Blob([JSON.stringify(item, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `note-${id}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+// Download singola foto
+function downloadPhoto(id) {
+    const gallery = JSON.parse(localStorage.getItem("gallery") || "[]");
+    const item = gallery.find(el => el.id === id);
+
+    if (!item) return;
+
+    const a = document.createElement("a");
+    a.href = item.img;
+    a.download = item.descr.replace(/[^a-z0-9]/gi, "_") + ".jpg";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 
-async function exportZip() {
-  const notes = JSON.parse(localStorage.getItem("photoNotesCam") || "[]");
+// -------------------------------------------
+// 🔥 NUOVO PULSANTE: ELIMINA TUTTO
+// -------------------------------------------
 
-  if (notes.length === 0) {
-    alert("La galleria è vuota!");
-    return;
-  }
-
-  const zip = new JSZip();
-  const folder = zip.folder("PhotoNotes");
-
-  for (let note of notes) {
-    const imgData = note.img.split(",")[1];
-    folder.file(`photo_${note.id}.jpg`, imgData, { base64: true });
-
-    const textContent =
-      `Descrizione: ${note.desc || "(vuota)"}\n` +
-      `Data: ${note.date}`;
-    folder.file(`photo_${note.id}.txt`, textContent);
-  }
-
-  const content = await zip.generateAsync({ type: "blob" });
-
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(content);
-  a.download = "galleria_photonotes.zip";
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-startBtn.addEventListener("click", startCamera);
-captureBtn.addEventListener("click", capturePhoto);
-saveBtn.addEventListener("click", saveNote);
-exportZipBtn.addEventListener("click", exportZip);
-
-loadGallery();
+document.getElementById("deleteAll").addEventListener("click", () => {
+    if (confirm("Sei sicuro di voler eliminare TUTTE le foto e descrizioni? L’azione è irreversibile.")) {
+        localStorage.removeItem("gallery");
+        loadGallery();
+        alert("Tutta la galleria è stata eliminata!");
+    }
+});
