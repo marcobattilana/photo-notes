@@ -1,33 +1,47 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Photo Notes Camera</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Notes</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script defer src="app.js"></script>
 </head>
 <body>
-<header><h1>Photo Notes</h1></header>
+
+<header>
+    <h1>Photo Notes</h1>
+</header>
 
 <section id="cameraSection">
-  <video id="cameraView" autoplay playsinline></video>
-  <div class="buttons-row">
-    <button id="startCameraBtn">🎥 Avvia fotocamera</button>
-    <button id="captureBtn" disabled>📸 Scatta</button>
-  </div>
-  <img id="preview" class="preview" />
-  <textarea id="description" placeholder="Descrizione della foto..."></textarea>
-  <button id="saveBtn" class="primary">💾 Salva</button>
+    <video id="camera" autoplay playsinline></video>
+
+    <div class="buttons-row">
+        <button id="startCamera">🎥 Avvia fotocamera</button>
+        <button id="takePhoto">📸 Scatta</button>
+    </div>
+
+    <img id="preview" class="preview">
+
+    <textarea id="description" placeholder="Descrizione della foto..."></textarea>
+
+    <button id="savePhoto" class="primary">💾 Salva</button>
 </section>
 
 <hr>
+
 <section id="gallerySection">
-  <h2>Galleria</h2>
-  <button id="exportZipBtn" class="primary">📦 Esporta Galleria (ZIP)</button>
-  <div id="gallery" class="gallery"></div>
+    <h2>Galleria</h2>
+
+    <button id="exportZipBtn" class="primary">📦 Esporta Galleria (ZIP)</button>
+
+    <button id="deleteAll" class="danger">🗑️ Elimina TUTTO</button>
+
+    <div id="gallery" class="gallery"></div>
 </section>
 
 </body>
