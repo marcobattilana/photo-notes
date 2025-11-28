@@ -4,16 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Photo Notes Camera</title>
+
+  <!-- Manifest PWA -->
   <link rel="manifest" href="manifest.json">
+
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Libreria ZIP -->
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+  <!-- Script -->
   <script src="app.js" defer></script>
 </head>
+
 <body>
+
 <header><h1>Photo Notes</h1></header>
 
 <section id="cameraSection">
-  <video id="cameraView" autoplay playsinline></video>
+
+  <!-- 🔥 IMPORTANTISSIMO: muted per far partire la camera su iPhone -->
+  <video id="cameraView" autoplay playsinline muted></video>
+
   <div class="buttons-row">
     <button id="startCameraBtn">🎥 Avvia fotocamera</button>
     <button id="captureBtn" disabled>📸 Scatta</button>
@@ -33,7 +46,6 @@
 
   <button id="exportZipBtn" class="primary">📦 Esporta Galleria (ZIP)</button>
 
-  <!-- 🔥 NUOVO: Elimina tutto -->
   <button id="deleteAllBtn" class="danger">🗑️ Elimina TUTTO</button>
 
   <div id="gallery" class="gallery"></div>
