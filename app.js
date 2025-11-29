@@ -100,31 +100,7 @@ document.getElementById("startCameraBtn").addEventListener("click", async () => 
 // -------------------------------------------
 document.getElementById("switchCameraBtn").addEventListener("click", switchCamera);
 
-// -------------------------------------------
-// 🔥 FLASH ON/OFF
-// -------------------------------------------
 
-document.getElementById("flashBtn").addEventListener("click", async () => {
-    if (!videoTrack) {
-        alert("Avvia prima la fotocamera!");
-        return;
-    }
-
-    try {
-        flashEnabled = !flashEnabled;
-
-        await videoTrack.applyConstraints({
-            advanced: [{ torch: flashEnabled }]
-        });
-
-        document.getElementById("flashBtn").textContent =
-            flashEnabled ? "💡 Flash ON" : "💡 Flash OFF";
-
-    } catch (err) {
-        console.error("Flash non supportato:", err);
-        alert("Il flash non è supportato da questo dispositivo o permesso.");
-    }
-});
 
 // -------------------------------------------
 // SCATTA FOTO
