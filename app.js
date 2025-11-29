@@ -11,9 +11,6 @@ const desc = document.getElementById("description");
 
 let stream = null;
 let lastPhoto = null;
-let flashEnabled = false;
-let videoTrack = null;
-
 
 let videoDevices = [];
 let currentDeviceIndex = 0;
@@ -40,21 +37,12 @@ async function startCamera(deviceIndex = 0) {
 
         currentDeviceIndex = deviceIndex % videoDevices.length;
 
-       stream = await navigator.mediaDevices.getUserMedia({
-    video: {
-        facingMode: { ideal: "environment" } // usa sempre la posteriore
-    }
-});
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: videoDevices[currentDeviceIndex].deviceId } }
+        });
 
-video.srcObject = stream;
-video.play();
-
-// ottengo la traccia video per il flash
-videoTrack = stream.getVideoTracks()[0];
-
-// abilito il pulsante flash
-document.getElementById("flashBtn").disabled = false;
-
+        video.srcObject = stream;
+        video.play();
 
         document.getElementById("captureBtn").disabled = false;
 
@@ -99,8 +87,6 @@ document.getElementById("startCameraBtn").addEventListener("click", async () => 
 // BOTTONE INVERTI CAMERA
 // -------------------------------------------
 document.getElementById("switchCameraBtn").addEventListener("click", switchCamera);
-
-
 
 // -------------------------------------------
 // SCATTA FOTO
